@@ -1,0 +1,45 @@
+{
+    "users": {
+        "1110": {
+            "name": "Lokesh",
+            "role": "admin",
+            "category": "Level 3",
+            "password": "password"
+        },
+        "2763": {
+            "name": "Dhanush",
+            "role": "admin",
+            "category": "Level 3",
+            "password": "password"
+        },
+        "82655": {
+            "name": "Manikandan",
+            "role": "agent",
+            "category": "Level 1",
+            "password": "password"
+        },
+        "82717": {
+            "name": "Manjunathan",
+            "role": "agent",
+            "category": "Level 1",
+            "password": "password"
+        }
+    },
+    "tickets": [
+        {
+            "id": "001",
+            "date": "2024-08-01",
+            "time": "10:30 AM",
+            "caller": "Jane Doe",
+            "department": "Sales",
+            "contact": "jane.doe@example.com",
+            "issue": "Unable to connect to Wi-Fi.",
+            "category": "Network",
+            "assignedTo": "Manikandan",
+            "priority": "High",
+            "status": "In Progress",
+            "resolution": "",
+            "notes": "User is in a rush for a client meeting."
+        }
+    ]
+}

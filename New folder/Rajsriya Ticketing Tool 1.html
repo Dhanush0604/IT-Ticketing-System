@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Call Tracking Tool Development Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Cool Harmony" - A calming and professional palette with shades of blue, gray, and subtle green accents. -->
+    <!-- Application Structure Plan: The application is structured into four thematic, scrollable sections for a clear narrative flow: 1) Introduction to define the tool's purpose, 2) Core Features presented as interactive cards for easy exploration, 3) Development Lifecycle visualized as a dynamic timeline to explain the process, and 4) Key Metrics dashboard with an interactive chart. This structure was chosen to guide the user from the "what" and "why" to the "how" and "how to measure," making the dense report content easily digestible and engaging. A persistent side navigation allows users to jump to any section, enhancing usability. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core Features -> Goal: Organize/Inform -> Viz/Presentation: Interactive Cards with icons -> Interaction: Click to reveal details -> Justification: Breaks down complex features into digestible chunks, encouraging exploration. -> Library/Method: HTML/CSS/Tailwind + JS.
+        - Report Info: SDLC Phases -> Goal: Change/Process -> Viz/Presentation: Interactive Vertical Timeline -> Interaction: Click on a phase to highlight and display its details and deliverables. -> Justification: Visually represents the sequential yet adaptable nature of the Agile process recommended in the report. -> Library/Method: HTML/CSS/Tailwind + JS.
+        - Report Info: KPIs & Metrics -> Goal: Compare/Analyze -> Viz/Presentation: Interactive Bar Chart (Chart.js) -> Interaction: Buttons to switch between different KPI datasets (e.g., Ticket Volume, Resolution Time). -> Justification: Provides a dynamic dashboard experience, allowing users to compare key metrics interactively. -> Library/Method: Chart.js/Canvas.
+        - Report Info: Agile vs. Waterfall -> Goal: Compare -> Viz/Presentation: Side-by-side comparison table -> Interaction: Hover effects to highlight key differences. -> Justification: A clear and direct way to compare the two methodologies as discussed in the report. -> Library/Method: HTML/CSS/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .nav-link.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .timeline-item.active .timeline-content {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .timeline-item.active .timeline-dot {
+            background-color: #4f46e5;
+            transform: scale(1.5);
+        }
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar" class="w-64 h-screen bg-white shadow-lg p-4 fixed top-0 left-0 flex flex-col">
+            <div class="text-2xl font-bold text-indigo-600 mb-8 text-center border-b pb-4">
+                IT Tool Guide
+            </div>
+            <ul class="space-y-2 flex-grow">
+                <li><a href="#introduction" class="nav-link block font-semibold text-slate-600 hover:bg-indigo-500 hover:text-white rounded-lg px-4 py-2 transition-colors duration-200">Introduction</a></li>
+                <li><a href="#features" class="nav-link block font-semibold text-slate-600 hover:bg-indigo-500 hover:text-white rounded-lg px-4 py-2 transition-colors duration-200">Core Features</a></li>
+                <li><a href="#sdlc" class="nav-link block font-semibold text-slate-600 hover:bg-indigo-500 hover:text-white rounded-lg px-4 py-2 transition-colors duration-200">Development Lifecycle</a></li>
+                <li><a href="#metrics" class="nav-link block font-semibold text-slate-600 hover:bg-indigo-500 hover:text-white rounded-lg px-4 py-2 transition-colors duration-200">Key Metrics</a></li>
+            </ul>
+            <div class="text-xs text-slate-400 text-center">
+                Interactive Project Guide
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="ml-64 p-8 md:p-12 w-full">
+
+            <!-- Section 1: Introduction -->
+            <section id="introduction" class="min-h-screen pt-16">
+                <div class="max-w-4xl mx-auto">
+                    <h1 class="text-5xl font-extrabold text-slate-900 mb-4">Developing an IT Call Tracking Tool</h1>
+                    <p class="text-lg text-slate-600 mb-8">This interactive guide provides a comprehensive strategy for developing a custom IT Call Tracking Tool. It outlines the creation of a robust application to centralize support requests, streamline workflows, and provide actionable data for improved service delivery. The goal is to move beyond a simple "sheet" to a strategic IT asset.</p>
+                    <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-6 rounded-r-lg shadow-md">
+                        <h3 class="font-bold text-xl mb-2">Key Distinction: IT Ticketing vs. Marketing Tool</h3>
+                        <p>It is critical to understand that this tool is an **IT ticketing system**, designed for internal support, not a marketing call tracking dashboard. This distinction shapes every aspect of the project, from feature prioritization to technology choices, ensuring the final product effectively solves the core problem of managing IT service requests.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Core Features -->
+            <section id="features" class="min-h-screen pt-16">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-4xl font-bold text-center text-slate-900 mb-2">Essential Features</h2>
+                    <p class="text-lg text-slate-600 text-center mb-12">Explore the core functionalities that transform a simple log into a powerful IT service management tool. Click on any feature to see its priority and primary benefit.</p>
+                    <div id="features-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Feature cards will be dynamically inserted here -->
+                    </div>
+                    <div id="feature-details" class="mt-12 bg-white p-8 rounded-lg shadow-xl text-center transition-opacity duration-500 opacity-0">
+                        <h3 id="details-title" class="text-2xl font-bold text-indigo-600 mb-2">Select a Feature</h3>
+                        <p id="details-benefit" class="text-slate-700 mb-4">Click on a card above to learn more about its benefits.</p>
+                        <span id="details-priority" class="inline-block bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-1 rounded-full"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Development Lifecycle -->
+            <section id="sdlc" class="min-h-screen pt-16">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-4xl font-bold text-center text-slate-900 mb-12">The Development Journey</h2>
+                    <div class="flex flex-col md:flex-row gap-12">
+                        <!-- Timeline -->
+                        <div class="w-full md:w-1/3">
+                            <div id="timeline-container" class="relative border-l-4 border-slate-200">
+                                <!-- Timeline items will be inserted here -->
+                            </div>
+                        </div>
+                        <!-- Details -->
+                        <div class="w-full md:w-2/3 bg-white p-8 rounded-lg shadow-xl">
+                            <h3 id="sdlc-title" class="text-3xl font-bold text-slate-800 mb-4">The Agile Approach</h3>
+                            <p id="sdlc-description" class="text-slate-600 mb-6">For this project, the **Agile methodology** is strongly recommended. Unlike the rigid, sequential Waterfall model, Agile is an iterative process that allows for flexibility, continuous feedback, and adaptation. This is ideal for an internal tool where requirements can evolve as users interact with it.</p>
+                            <h4 class="font-bold text-lg text-slate-700 mb-2">Key Deliverables:</h4>
+                            <p id="sdlc-deliverables" class="text-slate-600">Click on a phase to the left to see its specific activities and deliverables.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Key Metrics -->
+            <section id="metrics" class="min-h-screen pt-16">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-4xl font-bold text-center text-slate-900 mb-2">Measuring Success: Key Metrics</h2>
+                    <p class="text-lg text-slate-600 text-center mb-12">A successful tool provides data-driven insights. Interact with the chart below to visualize the Key Performance Indicators (KPIs) that are crucial for monitoring and improving IT support operations.</p>
+                    <div class="bg-white p-8 rounded-lg shadow-xl">
+                        <div class="flex justify-center gap-4 mb-8">
+                            <button class="kpi-btn bg-indigo-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors" data-kpi="volume">Ticket Volume</button>
+                            <button class="kpi-btn bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-slate-600 transition-colors" data-kpi="resolution">Resolution Time (Hours)</button>
+                            <button class="kpi-btn bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-slate-600 transition-colors" data-kpi="csat">CSAT (%)</button>
+                        </div>
+                        <div class="chart-container relative h-96 max-w-4xl mx-auto">
+                            <canvas id="kpiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA ---
+            const featuresData = [
+                { name: 'Ticket Management', icon: '🎫', benefit: 'Centralized control and visibility over all IT issues.', priority: 'Must-Have for MVP' },
+                { name: 'Service Portal', icon: '🖥️', benefit: 'Reduces IT workload and empowers users with self-service.', priority: 'Must-Have for MVP' },
+                { name: 'Ticket Routing', icon: '➔', benefit: 'Ensures requests reach qualified personnel for faster resolution.', priority: 'Must-Have for MVP' },
+                { name: 'Communication', icon: '�', benefit: 'Improves information exchange and team coordination.', priority: 'Must-Have for MVP' },
+                { name: 'Reporting & Analytics', icon: '📊', benefit: 'Enables data-driven decisions for continuous improvement.', priority: 'Must-Have for MVP' },
+                { name: 'SLA Tracking', icon: '⏱️', benefit: 'Ensures timely resolutions and adherence to service commitments.', priority: 'Highly Recommended' },
+                { name: 'Workflow Automation', icon: '⚙️', benefit: 'Reduces manual effort and increases operational efficiency.', priority: 'Highly Recommended' },
+                { name: 'Security', icon: '🔒', benefit: 'Safeguards sensitive data and ensures regulatory compliance.', priority: 'Highly Recommended' },
+                { name: 'Asset Management', icon: '📦', benefit: 'Provides better resource management and proactive maintenance.', priority: 'Optional Enhancement' }
+            ];
+
+            const sdlcData = [
+                { phase: 'Planning', description: 'Establishes project goals, scope, and initial requirements.', deliverables: 'Initial Software Requirements Specification (SRS), preliminary project plan.' },
+                { phase: 'Analysis', description: 'Gathers and analyzes detailed project requirements from all stakeholders.', deliverables: 'Detailed Requirement Documentation, Use Cases.' },
+                { phase: 'Design', description: 'Defines the system\'s architecture and creates a technical blueprint.', deliverables: 'Software Design Document (SDD), Architectural Diagrams.' },
+                { phase: 'Development', description: 'The actual coding and implementation of the software based on the design.', deliverables: 'Functional Software Prototype, Codebase.' },
+                { phase: 'Testing', description: 'Verifies the software against requirements and eliminates bugs.', deliverables: 'Test Reports, Defect Logs, Optimized Software.' },
+                { phase: 'Deployment', description: 'Releases the final product to the production environment for end-users.', deliverables: 'Deployed Application, User Manuals.' },
+                { phase: 'Maintenance', description: 'Ongoing support, bug fixes, updates, and enhancements post-deployment.', deliverables: 'Updated Software Versions, Support Documentation.' }
+            ];
+            
+            const kpiData = {
+                volume: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    values: [120, 150, 130, 180, 200, 170],
+                    title: 'Monthly Ticket Volume'
+                },
+                resolution: {
+                    labels: ['Hardware', 'Software', 'Network', 'Password', 'Other'],
+                    values: [8, 12, 6, 2, 10],
+                    title: 'Average Resolution Time by Category (Hours)'
+                },
+                csat: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    values: [85, 88, 90, 87, 92, 91],
+                    title: 'Customer Satisfaction (CSAT) Score (%)'
+                }
+            };
+
+            // --- INITIALIZATION ---
+            const featuresGrid = document.getElementById('features-grid');
+            featuresData.forEach(feature => {
+                const card = document.createElement('div');
+                card.className = 'feature-card bg-white p-6 rounded-lg shadow-lg text-center cursor-pointer';
+                card.dataset.name = feature.name;
+                card.innerHTML = `
+                    <div class="text-4xl mb-4">${feature.icon}</div>
+                    <h3 class="text-xl font-bold text-slate-800">${feature.name}</h3>
+                `;
+                featuresGrid.appendChild(card);
+            });
+
+            const timelineContainer = document.getElementById('timeline-container');
+            sdlcData.forEach((item, index) => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item mb-8 flex items-center cursor-pointer';
+                timelineItem.dataset.phase = item.phase;
+                timelineItem.innerHTML = `
+                    <div class="timeline-dot w-6 h-6 bg-slate-300 rounded-full -ml-3 border-4 border-white transition-all duration-300"></div>
+                    <div class="timeline-content ml-4 p-4 rounded-lg transition-all duration-300 w-full">
+                        <h4 class="font-bold text-lg">${index + 1}. ${item.phase}</h4>
+                    </div>
+                `;
+                timelineContainer.appendChild(timelineItem);
+            });
+
+            // --- INTERACTIVITY ---
+
+            // Feature Cards Interaction
+            const featureDetails = document.getElementById('feature-details');
+            const detailsTitle = document.getElementById('details-title');
+            const detailsBenefit = document.getElementById('details-benefit');
+            const detailsPriority = document.getElementById('details-priority');
+            
+            featuresGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.feature-card');
+                if (!card) return;
+                
+                const featureName = card.dataset.name;
+                const feature = featuresData.find(f => f.name === featureName);
+                
+                if (feature) {
+                    detailsTitle.textContent = feature.name;
+                    detailsBenefit.textContent = feature.benefit;
+                    detailsPriority.textContent = feature.priority;
+                    
+                    detailsPriority.className = 'inline-block text-sm font-semibold px-3 py-1 rounded-full';
+                    if (feature.priority === 'Must-Have for MVP') {
+                        detailsPriority.classList.add('bg-emerald-100', 'text-emerald-800');
+                    } else if (feature.priority === 'Highly Recommended') {
+                        detailsPriority.classList.add('bg-amber-100', 'text-amber-800');
+                    } else {
+                        detailsPriority.classList.add('bg-slate-100', 'text-slate-800');
+                    }
+
+                    featureDetails.classList.remove('opacity-0');
+                }
+            });
+
+            // Timeline Interaction
+            const sdlcTitle = document.getElementById('sdlc-title');
+            const sdlcDescription = document.getElementById('sdlc-description');
+            const sdlcDeliverables = document.getElementById('sdlc-deliverables');
+
+            timelineContainer.addEventListener('click', (e) => {
+                const item = e.target.closest('.timeline-item');
+                if (!item) return;
+
+                document.querySelectorAll('.timeline-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+
+                const phaseName = item.dataset.phase;
+                const phaseData = sdlcData.find(p => p.phase === phaseName);
+
+                if (phaseData) {
+                    sdlcTitle.textContent = phaseData.phase;
+                    sdlcDescription.textContent = phaseData.description;
+                    sdlcDeliverables.textContent = phaseData.deliverables;
+                }
+            });
+
+            // KPI Chart Interaction
+            const ctx = document.getElementById('kpiChart').getContext('2d');
+            let kpiChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: kpiData.volume.labels,
+                    datasets: [{
+                        label: kpiData.volume.title,
+                        data: kpiData.volume.values,
+                        backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: kpiData.volume.title,
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            document.querySelectorAll('.kpi-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.kpi-btn').forEach(b => {
+                        b.classList.remove('bg-indigo-500');
+                        b.classList.add('bg-slate-500', 'hover:bg-slate-600');
+                    });
+                    e.target.classList.add('bg-indigo-500');
+                    e.target.classList.remove('bg-slate-500', 'hover:bg-slate-600');
+
+                    const kpi = e.target.dataset.kpi;
+                    const data = kpiData[kpi];
+                    kpiChart.data.labels = data.labels;
+                    kpiChart.data.datasets[0].data = data.values;
+                    kpiChart.data.datasets[0].label = data.title;
+                    kpiChart.options.plugins.title.text = data.title;
+                    kpiChart.update();
+                });
+            });
+
+            // Sidebar Active Link on Scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+
+            sections.forEach(section => observer.observe(section));
+        });
+    </script>
+</body>
+</html>
+�

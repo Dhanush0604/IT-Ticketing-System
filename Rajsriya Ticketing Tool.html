@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Call Tracking Dashboard</title>
+    <!-- Use Tailwind CSS for responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* A light, clean background */
+        }
+        /* Modal background */
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Login Page Container -->
+    <div id="loginPage" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-6">IT Dashboard Login</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="employeeCode" class="block text-sm font-medium text-gray-700">Employee Code</label>
+                    <input type="text" id="employeeCode" name="employeeCode" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" name="password" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                        Login
+                    </button>
+                </div>
+                <div id="loginError" class="hidden text-sm text-red-600 text-center">Invalid Employee Code or password.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div id="mainDashboard" class="hidden max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+
+        <!-- Dashboard Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">IT Call Tracking Dashboard</h1>
+            <div class="flex items-center mt-2 sm:mt-0">
+                <p class="text-gray-500 mr-4" id="welcomeMessage">Welcome, User</p>
+                <button id="logoutBtn" class="py-2 px-4 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition ease-in-out duration-150">Logout</button>
+            </div>
+        </div>
+
+        <!-- Admin-only sections -->
+        <div id="adminView" class="hidden">
+            <!-- Summary Cards Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-indigo-100 rounded-2xl p-6 shadow-lg border border-indigo-200">
+                    <p class="text-sm font-medium text-indigo-600">Total Tickets</p>
+                    <p class="text-4xl font-bold text-indigo-800 mt-1" id="totalTickets">0</p>
+                </div>
+                <div class="bg-red-100 rounded-2xl p-6 shadow-lg border border-red-200">
+                    <p class="text-sm font-medium text-red-600">Open Tickets</p>
+                    <p class="text-4xl font-bold text-red-800 mt-1" id="openTickets">0</p>
+                </div>
+                <div class="bg-emerald-100 rounded-2xl p-6 shadow-lg border border-emerald-200">
+                    <p class="text-sm font-medium text-emerald-600">Resolved Tickets</p>
+                    <p class="text-4xl font-bold text-emerald-800 mt-1" id="resolvedTickets">0</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end mb-4 gap-2">
+                <button id="createUserBtn" class="py-2 px-4 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-sm transition ease-in-out duration-150">
+                    Create New User
+                </button>
+            </div>
+
+            <!-- User Management Table -->
+            <h2 class="text-2xl font-semibold text-gray-800 my-4">User Management</h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 mb-8">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Code</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add New Ticket Form -->
+            <div id="addTicketSection" class="mt-8 p-6 bg-purple-100 rounded-2xl shadow-xl border border-purple-200">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Add a New Ticket</h2>
+                <form id="addTicketForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="callerName" placeholder="Caller's Name" class="mt-1 block w-full rounded-xl p-2" required>
+                    <input type="text" id="department" placeholder="Department" class="mt-1 block w-full rounded-xl p-2" required>
+                    <input type="text" id="contactInfo" placeholder="Contact (Email or Phone)" class="mt-1 block w-full rounded-xl p-2" required>
+                    <input type="text" id="issueDescription" placeholder="Issue Description" class="mt-1 block w-full rounded-xl p-2" required>
+                    <select id="issueCategory" class="mt-1 block w-full rounded-xl p-2">
+                        <option>Hardware</option><option>Software</option><option>Network</option><option>Password</option><option>Printer</option><option>Other</option>
+                    </select>
+                    <select id="priority" class="mt-1 block w-full rounded-xl p-2">
+                        <option>High</option><option selected>Medium</option><option>Low</option>
+                    </select>
+                    <select id="assignedTo" class="mt-1 block w-full rounded-xl p-2" required></select>
+                    <textarea id="notes" placeholder="Notes" rows="3" class="md:col-span-2 mt-1 block w-full rounded-xl p-2"></textarea>
+                    <button type="submit" class="md:col-span-2 w-full py-3 px-4 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700">Add Ticket</button>
+                </form>
+                <div id="messageBox" class="hidden mt-4 p-4 text-sm rounded-md" role="alert"></div>
+            </div>
+            
+            <!-- Ticket Table Section -->
+            <h2 class="text-2xl font-semibold text-gray-800 my-4">All Tickets</h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date/Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Caller</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned To</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketTableBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent-only sections -->
+        <div id="agentView" class="hidden">
+             <h2 class="text-2xl font-semibold text-gray-800 my-4">My Assigned Tickets</h2>
+             <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date/Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Caller</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentTicketTableBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Modals (Edit, Create User) -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-bg flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full m-4">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Edit Ticket</h2>
+            <form id="editTicketForm" class="grid grid-cols-1 gap-4">
+                <input type="hidden" id="editTicketId">
+                <input type="text" id="editCallerName" class="mt-1 block w-full rounded-xl p-2" required>
+                <input type="text" id="editDepartment" class="mt-1 block w-full rounded-xl p-2" required>
+                <input type="text" id="editContactInfo" class="mt-1 block w-full rounded-xl p-2" required>
+                <input type="text" id="editIssueDescription" class="mt-1 block w-full rounded-xl p-2" required>
+                <select id="editIssueCategory" class="mt-1 block w-full rounded-xl p-2"></select>
+                <select id="editAssignedTo" class="mt-1 block w-full rounded-xl p-2" required></select>
+                <select id="editPriority" class="mt-1 block w-all rounded-xl p-2"></select>
+                <textarea id="editResolution" placeholder="Resolution Notes" rows="3" class="mt-1 block w-full rounded-xl p-2"></textarea>
+                <textarea id="editNotes" placeholder="Notes" rows="3" class="mt-1 block w-full rounded-xl p-2"></textarea>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" id="cancelEditBtn" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="createUserModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-bg flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full m-4">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Create New User</h2>
+            <form id="createUserForm" class="grid grid-cols-1 gap-4">
+                <input type="text" id="newEmployeeCode" placeholder="Employee Code" class="mt-1 block w-full rounded-xl p-2" required>
+                <input type="text" id="newUserName" placeholder="User Name" class="mt-1 block w-full rounded-xl p-2" required>
+                <select id="newUserRole" class="mt-1 block w-full rounded-xl p-2">
+                    <option value="admin">Admin</option>
+                    <option value="agent">Trainee/user</option>
+                </select>
+                <input type="text" id="newUserCategory" placeholder="Category" class="mt-1 block w-full rounded-xl p-2" required>
+                <input type="password" id="newUserPassword" placeholder="Password" class="mt-1 block w-full rounded-xl p-2" required>
+                <div id="createUserMessage" class="hidden mt-2 p-2 text-sm rounded-md"></div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" id="cancelCreateUserBtn" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Configuration ---
+            const SERVER_IP = '192.168.221.122';
+            const API_BASE_URL = `http://${SERVER_IP}:5000/api`;
+
+            // --- DOM Element References ---
+            const loginPage = document.getElementById('loginPage');
+            const mainDashboard = document.getElementById('mainDashboard');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+
+            const adminView = document.getElementById('adminView');
+            const agentView = document.getElementById('agentView');
+            
+            const createUserBtn = document.getElementById('createUserBtn');
+            const createUserModal = document.getElementById('createUserModal');
+            const createUserForm = document.getElementById('createUserForm');
+            const cancelCreateUserBtn = document.getElementById('cancelCreateUserBtn');
+            const createUserMessage = document.getElementById('createUserMessage');
+
+            const ticketTableBody = document.getElementById('ticketTableBody');
+            const agentTicketTableBody = document.getElementById('agentTicketTableBody');
+            const userTableBody = document.getElementById('userTableBody');
+            const addTicketForm = document.getElementById('addTicketForm');
+            const assignedToSelect = document.getElementById('assignedTo');
+            const editTicketForm = document.getElementById('editTicketForm');
+            const editModal = document.getElementById('editModal');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const editAssignedToSelect = document.getElementById('editAssignedTo');
+            const messageBox = document.getElementById('messageBox');
+            const totalTicketsEl = document.getElementById('totalTickets');
+            const openTicketsEl = document.getElementById('openTickets');
+            const resolvedTicketsEl = document.getElementById('resolvedTickets');
+
+            // --- Local Data Store ---
+            let users = {};
+            let tickets = [];
+            let currentUser = null;
+
+            // --- Data Persistence Functions ---
+            function showLoader(show) {
+                loadingIndicator.classList.toggle('hidden', !show);
+            }
+
+            async function loadData() {
+                showLoader(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/data`);
+                    if (!response.ok) throw new Error(`Cannot connect to the server. Is it running?`);
+                    const data = await response.json();
+                    users = data.users || {};
+                    tickets = data.tickets || [];
+                } catch (error) {
+                    console.error("Failed to load data:", error);
+                    alert(error.message);
+                } finally {
+                    showLoader(false);
+                }
+            }
+
+            async function saveData() {
+                showLoader(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/data`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ users, tickets }),
+                    });
+                    if (!response.ok) throw new Error('Failed to save data to the server.');
+                } catch (error) {
+                    console.error("Failed to save data:", error);
+                    alert(error.message);
+                } finally {
+                    showLoader(false);
+                }
+            }
+
+            // --- Rendering Functions ---
+            function renderAll() {
+                if (!currentUser) return;
+                if (currentUser.role === 'admin') {
+                    renderAdminTickets();
+                    renderUsers();
+                } else {
+                    renderAgentTickets();
+                }
+                renderAgentList();
+            }
+            
+            function renderAgentList() {
+                const agents = Object.values(users).filter(user => user.role === 'agent' || user.role === 'admin');
+                const html = agents.map(agent => `<option value="${agent.name}">${agent.name} (${agent.category})</option>`).join('');
+                assignedToSelect.innerHTML = html;
+                editAssignedToSelect.innerHTML = html;
+            }
+
+            function renderAdminTickets() {
+                ticketTableBody.innerHTML = '';
+                tickets.forEach(ticket => {
+                    const statusClass = ticket.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
+                    const priorityClass = ticket.priority === 'High' ? 'text-red-600' : ticket.priority === 'Medium' ? 'text-yellow-600' : 'text-green-600';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4">${ticket.id}</td>
+                        <td class="px-6 py-4">${ticket.date}<br>${ticket.time}</td>
+                        <td class="px-6 py-4">${ticket.caller}</td>
+                        <td class="px-6 py-4 max-w-xs truncate" title="${ticket.issue}">${ticket.issue}</td>
+                        <td class="px-6 py-4">${ticket.assignedTo}</td>
+                        <td class="px-6 py-4 font-semibold ${priorityClass}">${ticket.priority}</td>
+                        <td class="px-6 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${ticket.status}</span></td>
+                        <td class="px-6 py-4 flex gap-2">
+                            <button class="text-indigo-600 hover:text-indigo-900 edit-btn" data-id="${ticket.id}">Edit</button>
+                            ${ticket.status !== 'Completed' ? `<button class="text-emerald-600 hover:text-emerald-900 close-btn" data-id="${ticket.id}">Close</button>` : `<button class="text-yellow-600 hover:text-yellow-900 reopen-btn" data-id="${ticket.id}">Reopen</button>`}
+                        </td>
+                    `;
+                    ticketTableBody.appendChild(row);
+                });
+                updateSummaryCards();
+            }
+
+            function renderAgentTickets() {
+                agentTicketTableBody.innerHTML = '';
+                const agentTickets = tickets.filter(ticket => ticket.assignedTo === currentUser.name);
+                agentTickets.forEach(ticket => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4">${ticket.id}</td>
+                        <td class="px-6 py-4">${ticket.date}<br>${ticket.time}</td>
+                        <td class="px-6 py-4">${ticket.caller}</td>
+                        <td class="px-6 py-4 max-w-xs truncate" title="${ticket.issue}">${ticket.issue}</td>
+                        <td class="px-6 py-4">
+                            <select class="status-select mt-1 rounded-xl p-2" data-id="${ticket.id}">
+                                <option value="In Progress" ${ticket.status === 'In Progress' ? 'selected' : ''}>Pending</option>
+                                <option value="Completed" ${ticket.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Transferred to Admin" ${ticket.status === 'Transferred to Admin' ? 'selected' : ''}>Transfer</option>
+                            </select>
+                        </td>
+                    `;
+                    agentTicketTableBody.appendChild(row);
+                });
+            }
+
+            function renderUsers() {
+                userTableBody.innerHTML = '';
+                Object.entries(users).forEach(([code, user]) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4">${code}</td>
+                        <td class="px-6 py-4">${user.name}</td>
+                        <td class="px-6 py-4">${user.role}</td>
+                        <td class="px-6 py-4">${user.category}</td>
+                    `;
+                    userTableBody.appendChild(row);
+                });
+            }
+
+            function updateSummaryCards() {
+                totalTicketsEl.textContent = tickets.length;
+                openTicketsEl.textContent = tickets.filter(t => t.status !== 'Completed').length;
+                resolvedTicketsEl.textContent = tickets.filter(t => t.status === 'Completed').length;
+            }
+
+            // --- Event Handlers ---
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                showLoader(true);
+                const employeeCode = document.getElementById('employeeCode').value;
+                const password = document.getElementById('password').value;
+                loginError.classList.add('hidden');
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ employeeCode, password })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        currentUser = { code: result.employeeCode, ...result.user };
+                        await loadData(); // Load all data after successful login
+                        loginPage.classList.add('hidden');
+                        mainDashboard.classList.remove('hidden');
+                        welcomeMessage.textContent = `Welcome, ${currentUser.name} (${currentUser.role})`;
+                        adminView.classList.toggle('hidden', currentUser.role !== 'admin');
+                        agentView.classList.toggle('hidden', currentUser.role !== 'agent');
+                        renderAll();
+                    } else {
+                        loginError.textContent = result.message || 'Invalid credentials.';
+                        loginError.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Login failed:", error);
+                    loginError.textContent = 'Could not connect to the login server.';
+                    loginError.classList.remove('hidden');
+                } finally {
+                    showLoader(false);
+                }
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                currentUser = null;
+                loginPage.classList.remove('hidden');
+                mainDashboard.classList.add('hidden');
+                loginForm.reset();
+                loginError.classList.add('hidden');
+            });
+
+            addTicketForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const now = new Date();
+                const newTicket = {
+                    id: String(Date.now()).slice(-5),
+                    date: now.toISOString().slice(0, 10),
+                    time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                    caller: document.getElementById('callerName').value,
+                    department: document.getElementById('department').value,
+                    contact: document.getElementById('contactInfo').value,
+                    issue: document.getElementById('issueDescription').value,
+                    category: document.getElementById('issueCategory').value,
+                    assignedTo: assignedToSelect.value,
+                    priority: document.getElementById('priority').value,
+                    status: 'In Progress',
+                    resolution: '',
+                    notes: document.getElementById('notes').value
+                };
+                tickets.unshift(newTicket);
+                await saveData();
+                renderAdminTickets();
+                showMessage('Ticket #' + newTicket.id + ' added!', 'success');
+                addTicketForm.reset();
+            });
+
+            ticketTableBody.addEventListener('click', async function(event) {
+                const target = event.target;
+                const ticketId = target.dataset.id;
+                if (!ticketId) return;
+
+                const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+                if (ticketIndex === -1) return;
+
+                if (target.classList.contains('edit-btn')) {
+                    const ticket = tickets[ticketIndex];
+                    Object.keys(ticket).forEach(key => {
+                        const el = document.getElementById(`edit${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                        if (el) el.value = ticket[key];
+                    });
+                    document.getElementById('editTicketId').value = ticket.id;
+                    editModal.classList.remove('hidden');
+                } else if (target.classList.contains('close-btn')) {
+                    tickets[ticketIndex].status = 'Completed';
+                    await saveData();
+                    renderAdminTickets();
+                } else if (target.classList.contains('reopen-btn')) {
+                    tickets[ticketIndex].status = 'In Progress';
+                    await saveData();
+                    renderAdminTickets();
+                }
+            });
+
+            agentTicketTableBody.addEventListener('change', async function(event) {
+                const target = event.target;
+                if (target.classList.contains('status-select')) {
+                    const ticketId = target.dataset.id;
+                    const newStatus = target.value;
+                    const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+                    if (ticketIndex === -1) return;
+                    
+                    tickets[ticketIndex].status = newStatus;
+                    if (newStatus === 'Transferred to Admin') {
+                        const admin = Object.values(users).find(u => u.role === 'admin');
+                        if (admin) tickets[ticketIndex].assignedTo = admin.name;
+                    }
+                    await saveData();
+                    renderAgentTickets();
+                    showMessage(`Ticket #${ticketId} status updated.`, 'success');
+                }
+            });
+
+            editTicketForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const ticketId = document.getElementById('editTicketId').value;
+                const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+                if (ticketIndex === -1) return;
+                
+                const ticketData = {
+                    caller: document.getElementById('editCallerName').value,
+                    department: document.getElementById('editDepartment').value,
+                    contact: document.getElementById('editContactInfo').value,
+                    issue: document.getElementById('editIssueDescription').value,
+                    category: document.getElementById('editIssueCategory').value,
+                    assignedTo: document.getElementById('editAssignedTo').value,
+                    priority: document.getElementById('editPriority').value,
+                    resolution: document.getElementById('editResolution').value,
+                    notes: document.getElementById('editNotes').value,
+                };
+                
+                tickets[ticketIndex] = { ...tickets[ticketIndex], ...ticketData };
+
+                await saveData();
+                editModal.classList.add('hidden');
+                renderAdminTickets();
+                showMessage(`Ticket #${ticketId} updated.`, 'success');
+            });
+
+            createUserForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const newEmployeeCode = document.getElementById('newEmployeeCode').value;
+                if (users[newEmployeeCode]) {
+                    showCreateUserMessage('Employee code already exists!', 'error');
+                    return;
+                }
+                users[newEmployeeCode] = {
+                    name: document.getElementById('newUserName').value,
+                    role: document.getElementById('newUserRole').value,
+                    category: document.getElementById('newUserCategory').value,
+                    password: document.getElementById('newUserPassword').value
+                };
+                await saveData();
+                showCreateUserMessage('User created successfully!', 'success');
+                setTimeout(() => createUserModal.classList.add('hidden'), 1500);
+                renderAll();
+            });
+
+            // --- Modal Controls & Helpers ---
+            cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+            createUserBtn.addEventListener('click', () => createUserModal.classList.remove('hidden'));
+            cancelCreateUserBtn.addEventListener('click', () => createUserModal.classList.add('hidden'));
+
+            function showMessage(text, type) {
+                messageBox.textContent = text;
+                messageBox.className = `mt-4 p-4 text-sm rounded-md ${type === 'success' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`;
+                messageBox.classList.remove('hidden');
+                setTimeout(() => messageBox.classList.add('hidden'), 3000);
+            }
+            function showCreateUserMessage(text, type) {
+                createUserMessage.textContent = text;
+                createUserMessage.className = `mt-2 p-2 text-sm rounded-md ${type === 'success' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`;
+                createUserMessage.classList.remove('hidden');
+                setTimeout(() => createUserMessage.classList.add('hidden'), 3000);
+            }
+
+            // --- Initial Setup ---
+            mainDashboard.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

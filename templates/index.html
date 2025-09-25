@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rajsriya IT Ticketing System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: conic-gradient(from 210deg, rgba(197, 187, 184, 1.000) 0.000deg, rgba(197, 187, 184, 1.000) 24.000deg, rgba(184, 181, 184, 1.000) 24.000deg, rgba(184, 181, 184, 1.000) 48.000deg, rgba(169, 175, 183, 1.000) 48.000deg, rgba(169, 175, 183, 1.000) 72.000deg, rgba(154, 168, 181, 1.000) 72.000deg, rgba(154, 168, 181, 1.000) 96.000deg, rgba(139, 161, 179, 1.000) 96.000deg, rgba(139, 161, 179, 1.000) 120.000deg, rgba(125, 152, 175, 1.000) 120.000deg, rgba(125, 152, 175, 1.000) 144.000deg, rgba(112, 144, 171, 1.000) 144.000deg, rgba(112, 144, 171, 1.000) 168.000deg, rgba(101, 135, 166, 1.000) 168.000deg, rgba(101, 135, 166, 1.000) 192.000deg, rgba(92, 126, 161, 1.000) 192.000deg, rgba(92, 126, 161, 1.000) 216.000deg, rgba(85, 117, 155, 1.000) 216.000deg, rgba(85, 117, 155, 1.000) 240.000deg, rgba(81, 108, 148, 1.000) 240.000deg, rgba(81, 108, 148, 1.000) 264.000deg, rgba(79, 99, 141, 1.000) 264.000deg, rgba(79, 99, 141, 1.000) 288.000deg, rgba(80, 90, 133, 1.000) 288.000deg, rgba(80, 90, 133, 1.000) 312.000deg, rgba(84, 83, 125, 1.000) 312.000deg, rgba(84, 83, 125, 1.000) 336.000deg, rgba(91, 75, 116, 1.000) 336.000deg 360.000deg);
+            min-height: 100vh;
+        }
+        .content-card {
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+    </style>
+</head>
+<body>
+    <div id="login-section" class="flex items-center justify-center h-screen"><div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl content-card"><h2 class="text-2xl font-bold text-center text-gray-800">IT Ticketing Tool Login</h2><form id="login-form" class="space-y-6"><input type="text" id="employeeCode" name="employeeCode" required placeholder="Employee Code" class="w-full px-3 py-2 mt-1 border rounded-md"><input type="password" id="password" name="password" required placeholder="Password" class="w-full px-3 py-2 mt-1 border rounded-md"><button type="submit" class="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Login</button></form></div></div>
+    <div id="dashboard-section" class="container mx-auto p-4" style="display: none;"><header class="flex justify-between items-center mb-6 p-4 rounded-lg shadow-md content-card"><h1 class="text-3xl font-bold text-gray-800">Rajsriya IT Ticketing System</h1><div class="flex items-center space-x-4"><div id="welcome-message" class="text-xl text-gray-600"></div><button id="logout-button" class="px-4 py-2 font-semibold text-white bg-red-500 rounded-md hover:bg-red-600">Logout</button></div></header><div class="mb-6 flex space-x-4"><button id="create-ticket-btn" class="px-4 py-2 font-bold text-white bg-green-500 rounded-md hover:bg-green-600">Create New Ticket</button><a href="/user-management" target="_blank" id="user-management-btn" class="hidden px-4 py-2 font-bold text-white bg-purple-500 rounded-md hover:bg-purple-600">Manage Users</a></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div id="total-tickets-card" class="p-4 bg-blue-500 text-white rounded-lg shadow cursor-pointer transition-transform transform hover:scale-105"><h2 class="text-lg font-semibold">Total Tickets</h2><p id="total-tickets" class="text-3xl font-bold">0</p></div><div id="open-tickets-card" class="p-4 bg-yellow-500 text-white rounded-lg shadow cursor-pointer transition-transform transform hover:scale-105"><h2 class="text-lg font-semibold">Open Tickets</h2><p id="open-tickets" class="text-3xl font-bold">0</p></div><div id="resolved-tickets-card" class="p-4 bg-green-500 text-white rounded-lg shadow cursor-pointer transition-transform transform hover:scale-105"><h2 class="text-lg font-semibold">Resolved Tickets</h2><p id="resolved-tickets" class="text-3xl font-bold">0</p></div></div><div class="p-6 rounded-lg shadow mb-6 content-card"><h2 class="text-2xl font-semibold mb-4">My Assigned Tickets</h2><table class="min-w-full bg-white border"><thead class="bg-gray-200"><tr><th class="py-2 px-4 border-b">ID</th><th class="py-2 px-4 border-b">Date/Time</th><th class="py-2 px-4 border-b">Caller</th><th class="py-2 px-4 border-b">Location</th><th class="py-2 px-4 border-b">Issue</th><th class="py-2 px-4 border-b">Status</th><th class="py-2 px-4 border-b">Remarks</th><th class="py-2 px-4 border-b">Actions</th></tr></thead><tbody id="my-tickets-table-body"></tbody></table></div><div class="p-6 rounded-lg shadow mb-6 content-card"><h2 class="text-2xl font-semibold mb-4">All Tickets</h2><table class="min-w-full bg-white border"><thead class="bg-gray-200"><tr><th class="py-2 px-4 border-b">ID</th><th class="py-2 px-4 border-b">Date/Time</th><th class="py-2 px-4 border-b">Caller</th><th class="py-2 px-4 border-b">Location</th><th class="py-2 px-4 border-b">Issue</th><th class="py-2 px-4 border-b">Assigned To</th><th class="py-2 px-4 border-b">Priority</th><th class="py-2 px-4 border-b">Status</th><th class="py-2 px-4 border-b">Remarks</th><th class="py-2 px-4 border-b">Actions</th></tr></thead><tbody id="all-tickets-table-body"></tbody></table></div></div>
+    <div id="create-ticket-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;"><div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white"><div class="mt-3 text-center"><h3 class="text-lg font-medium text-gray-900">Create New Ticket</h3><form id="create-ticket-form" class="space-y-4 text-left mt-4"><input type="text" id="caller" placeholder="Caller Name" required class="w-full px-3 py-2 border rounded"><select id="location" required class="w-full px-3 py-2 border rounded"><option value="">Select Location</option><option>Hosur Unit 1</option><option>Hosur Unit 2</option><option>Hosur Unit 4</option><option>Hosur Unit 5</option><option>Hosur Unit 8</option><option>AutoPluss</option><option>Mysore</option><option>Chennai</option><option>RE</option><option>Delphi</option></select><input type="text" id="department" placeholder="Department" required class="w-full px-3 py-2 border rounded"><input type="text" id="contact" placeholder="Contact Number" required class="w-full px-3 py-2 border rounded"><textarea id="issue" placeholder="Issue Description" required class="w-full px-3 py-2 border rounded"></textarea><select id="category" required class="w-full px-3 py-2 border rounded"><option value="">Select Category</option><option>Hardware</option><option>Software</option><option>Network</option></select><select id="priority" required class="w-full px-3 py-2 border rounded"><option value="">Select Priority</option><option>High</option><option>Medium</option><option>Low</option></select><select id="assigned_to" required class="w-full px-3 py-2 border rounded"><option value="">Assign To</option></select><textarea id="notes" placeholder="Notes (Optional)" class="w-full px-3 py-2 border rounded"></textarea></form><div class="items-center px-4 py-3 mt-4"><button id="submit-ticket-btn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Submit Ticket</button><button id="close-create-modal-btn" class="px-4 py-2 bg-gray-500 text-white rounded-md ml-2 hover:bg-gray-600">Cancel</button></div></div></div></div>
+    <div id="edit-ticket-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;"><div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white"><div class="mt-3 text-center"><h3 class="text-lg font-medium text-gray-900">Edit Ticket</h3><form id="edit-ticket-form" class="space-y-4 text-left mt-4"><input type="hidden" id="edit-ticket-id"><div class="text-left"><label for="edit-location" class="block text-sm font-medium text-gray-700">Location</label><select id="edit-location" required class="w-full px-3 py-2 border rounded"><option value="">Select Location</option><option>Hosur Unit 1</option><option>Hosur Unit 2</option><option>Hosur Unit 4</option><option>Hosur Unit 5</option><option>Hosur Unit 8</option><option>AutoPluss</option><option>Mysore</option><option>Chennai</option><option>RE</option><option>Delphi</option></select></div><div class="text-left"><label for="edit-status" class="block text-sm font-medium text-gray-700">Status</label><select id="edit-status" required class="w-full px-3 py-2 border rounded"><option>Open</option><option>In Progress</option><option>On Hold</option><option>Completed</option></select></div><div class="text-left"><label for="edit-resolution" class="block text-sm font-medium text-gray-700">Resolution Notes</label><textarea id="edit-resolution" placeholder="Add resolution notes..." class="w-full px-3 py-2 border rounded"></textarea></div></form><div class="items-center px-4 py-3 mt-4"><button id="save-ticket-changes-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Save Changes</button><button id="close-edit-modal-btn" class="px-4 py-2 bg-gray-500 text-white rounded-md ml-2 hover:bg-gray-600">Cancel</button></div></div></div></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ui = {
+                loginSection: document.getElementById('login-section'), dashboardSection: document.getElementById('dashboard-section'), loginForm: document.getElementById('login-form'), welcomeMessage: document.getElementById('welcome-message'), logoutButton: document.getElementById('logout-button'),
+                totalTicketsCard: document.getElementById('total-tickets-card'), openTicketsCard: document.getElementById('open-tickets-card'), resolvedTicketsCard: document.getElementById('resolved-tickets-card'),
+                totalTickets: document.getElementById('total-tickets'), openTickets: document.getElementById('open-tickets'), resolvedTickets: document.getElementById('resolved-tickets'),
+                allTicketsTableBody: document.getElementById('all-tickets-table-body'), myTicketsTableBody: document.getElementById('my-tickets-table-body'),
+                userManagementBtn: document.getElementById('user-management-btn'), createTicketModal: document.getElementById('create-ticket-modal'), createTicketBtn: document.getElementById('create-ticket-btn'),
+                closeCreateModalBtn: document.getElementById('close-create-modal-btn'), createTicketForm: document.getElementById('create-ticket-form'), submitTicketBtn: document.getElementById('submit-ticket-btn'),
+                assignedToSelect: document.getElementById('assigned_to'), editTicketModal: document.getElementById('edit-ticket-modal'), closeEditModalBtn: document.getElementById('close-edit-modal-btn'),
+                saveTicketChangesBtn: document.getElementById('save-ticket-changes-btn'), editTicketIdInput: document.getElementById('edit-ticket-id'), editStatusSelect: document.getElementById('edit-status'),
+                editResolutionText: document.getElementById('edit-resolution'), editLocationSelect: document.getElementById('edit-location')
+            };
+            let allFetchedTickets = [], myFetchedTickets = [], allTicketsById = {}, currentUser = null;
+
+            function init() {
+                currentUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                if (currentUser) displayDashboard(currentUser); else showLoginPage();
+            }
+            function showLoginPage() {
+                ui.loginSection.style.display = 'flex';
+                ui.dashboardSection.style.display = 'none';
+                localStorage.removeItem('loggedInUser');
+                currentUser = null;
+            }
+            async function displayDashboard(user) {
+                ui.loginSection.style.display = 'none';
+                ui.dashboardSection.style.display = 'block';
+                ui.welcomeMessage.textContent = `Welcome, ${user.name}`;
+                if (user.role === 'admin') ui.userManagementBtn.style.display = 'inline-block';
+                try {
+                    const res = await fetch(`/api/dashboard_data?employeeCode=${user.employee_code}`);
+                    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+                    const data = await res.json();
+                    allFetchedTickets = data.allTickets; myFetchedTickets = data.myTickets;
+                    allTicketsById = [...allFetchedTickets, ...myFetchedTickets].reduce((acc, t) => ({...acc, [t.id]: t}), {});
+                    ui.totalTickets.textContent = data.stats.total;
+                    ui.openTickets.textContent = allFetchedTickets.filter(t => t.status !== 'Completed').length;
+                    ui.resolvedTickets.textContent = data.stats.resolved;
+                    const usersRes = await fetch('/api/users');
+                    const users = await usersRes.json();
+                    ui.assignedToSelect.innerHTML = '<option value="">Assign To</option>';
+                    users.forEach(u => ui.assignedToSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`);
+                    applyFilterAndHighlight('all', ui.totalTicketsCard);
+                } catch (err) { console.error('Dashboard error:', err); alert('Could not load dashboard data.'); }
+            }
+            function renderTicketRow(t, isAdminView) {
+                return `<tr><td class="border px-4 py-2">${String(t.id).padStart(2, '0')}</td><td class="border px-4 py-2">${t.date} ${t.time}</td><td class="border px-4 py-2">${t.caller}</td><td class="border px-4 py-2">${t.location || ''}</td><td class="border px-4 py-2">${t.issue}</td>${isAdminView ? `<td class="border px-4 py-2">${t.assigned_to}</td><td class="border px-4 py-2">${t.priority}</td>` : ''}<td class="border px-4 py-2">${t.status}</td><td class="border px-4 py-2">${t.resolution || ''}</td><td class="border px-4 py-2"><button onclick="openEditModal(${t.id})" class="text-blue-500 hover:underline">Edit</button>${(currentUser.role === 'admin') ? `<button onclick="deleteTicket(${t.id})" class="text-red-500 hover:underline ml-2">Delete</button>` : ''}</td></tr>`;
+            }
+            function applyFilterAndHighlight(filterStatus, activeCard) {
+                [ui.totalTicketsCard, ui.openTicketsCard, ui.resolvedTicketsCard].forEach(card => card.classList.remove('ring-4', 'ring-offset-2', 'ring-indigo-500'));
+                activeCard.classList.add('ring-4', 'ring-offset-2', 'ring-indigo-500');
+                const allFiltered = (filterStatus === 'all') ? allFetchedTickets : allFetchedTickets.filter(t => (filterStatus === 'Open') ? t.status !== 'Completed' : t.status === filterStatus);
+                ui.allTicketsTableBody.innerHTML = allFiltered.map(t => renderTicketRow(t, true)).join('');
+                const myFiltered = (filterStatus === 'all') ? myFetchedTickets : myFetchedTickets.filter(t => (filterStatus === 'Open') ? t.status !== 'Completed' : t.status === filterStatus);
+                ui.myTicketsTableBody.innerHTML = myFiltered.map(t => renderTicketRow(t, false)).join('');
+            }
+            ui.loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const body = { employeeCode: ui.loginForm.employeeCode.value, password: ui.loginForm.password.value };
+                try {
+                    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    const result = await res.json();
+                    if (result.success) { localStorage.setItem('loggedInUser', JSON.stringify(result.user)); init(); } 
+                    else { alert('Login failed: ' + result.message); }
+                } catch (err) { console.error('Login error:', err); }
+            });
+            ui.openTicketsCard.addEventListener('click', () => applyFilterAndHighlight('Open', ui.openTicketsCard));
+            ui.resolvedTicketsCard.addEventListener('click', () => applyFilterAndHighlight('Completed', ui.resolvedTicketsCard));
+            ui.totalTicketsCard.addEventListener('click', () => applyFilterAndHighlight('all', ui.totalTicketsCard));
+            ui.logoutButton.addEventListener('click', showLoginPage);
+            ui.createTicketBtn.addEventListener('click', () => ui.createTicketModal.style.display = 'block');
+            ui.closeCreateModalBtn.addEventListener('click', () => { ui.createTicketModal.style.display = 'none'; ui.createTicketForm.reset(); });
+            ui.closeEditModalBtn.addEventListener('click', () => ui.editTicketModal.style.display = 'none');
+            ui.submitTicketBtn.addEventListener('click', async () => {
+                const ticketData = { caller: document.getElementById('caller').value, location: document.getElementById('location').value, department: document.getElementById('department').value, contact: document.getElementById('contact').value, issue: document.getElementById('issue').value, category: document.getElementById('category').value, priority: document.getElementById('priority').value, assigned_to: document.getElementById('assigned_to').value, notes: document.getElementById('notes').value };
+                if (!ticketData.caller || !ticketData.issue || !ticketData.assigned_to) { alert('Please fill all required fields.'); return; }
+                try {
+                    const res = await fetch('/api/tickets/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ticketData) });
+                    if (res.ok) { alert('Ticket created successfully!'); ui.createTicketModal.style.display = 'none'; init(); } 
+                    else { alert('Failed to create ticket.'); }
+                } catch (err) { console.error('Error creating ticket:', err); }
+            });
+            ui.saveTicketChangesBtn.addEventListener('click', async () => {
+                const ticketId = ui.editTicketIdInput.value;
+                const ticketData = { status: ui.editStatusSelect.value, resolution: ui.editResolutionText.value, location: ui.editLocationSelect.value };
+                try {
+                    const res = await fetch(`/api/tickets/update/${ticketId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ticketData) });
+                    if (res.ok) { alert('Ticket updated successfully!'); ui.editTicketModal.style.display = 'none'; init(); } 
+                    else { alert('Failed to update ticket.'); }
+                } catch (err) { console.error('Error updating ticket:', err); }
+            });
+            window.openEditModal = (id) => {
+                const ticket = allTicketsById[id];
+                if (!ticket) return;
+                ui.editTicketIdInput.value = id;
+                ui.editLocationSelect.value = ticket.location || '';
+                ui.editStatusSelect.value = ticket.status;
+                ui.editResolutionText.value = ticket.resolution || '';
+                ui.editTicketModal.style.display = 'block';
+            };
+            window.deleteTicket = async (id) => {
+                if (!confirm('Are you sure you want to delete this ticket?')) return;
+                try {
+                    const res = await fetch(`/api/tickets/delete/${id}`, { method: 'DELETE' });
+                    if (res.ok) { alert('Ticket deleted successfully.'); init(); } 
+                    else { alert('Failed to delete ticket.'); }
+                } catch (err) { console.error('Delete error:', err); }
+            };
+            init();
+        });
+    </script>
+</body>
+</html>

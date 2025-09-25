@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: conic-gradient(from 210deg, rgba(197, 187, 184, 1.000) 0.000deg, rgba(197, 187, 184, 1.000) 24.000deg, rgba(184, 181, 184, 1.000) 24.000deg, rgba(184, 181, 184, 1.000) 48.000deg, rgba(169, 175, 183, 1.000) 48.000deg, rgba(169, 175, 183, 1.000) 72.000deg, rgba(154, 168, 181, 1.000) 72.000deg, rgba(154, 168, 181, 1.000) 96.000deg, rgba(139, 161, 179, 1.000) 96.000deg, rgba(139, 161, 179, 1.000) 120.000deg, rgba(125, 152, 175, 1.000) 120.000deg, rgba(125, 152, 175, 1.000) 144.000deg, rgba(112, 144, 171, 1.000) 144.000deg, rgba(112, 144, 171, 1.000) 168.000deg, rgba(101, 135, 166, 1.000) 168.000deg, rgba(101, 135, 166, 1.000) 192.000deg, rgba(92, 126, 161, 1.000) 192.000deg, rgba(92, 126, 161, 1.000) 216.000deg, rgba(85, 117, 155, 1.000) 216.000deg, rgba(85, 117, 155, 1.000) 240.000deg, rgba(81, 108, 148, 1.000) 240.000deg, rgba(81, 108, 148, 1.000) 264.000deg, rgba(79, 99, 141, 1.000) 264.000deg, rgba(79, 99, 141, 1.000) 288.000deg, rgba(80, 90, 133, 1.000) 288.000deg, rgba(80, 90, 133, 1.000) 312.000deg, rgba(84, 83, 125, 1.000) 312.000deg, rgba(84, 83, 125, 1.000) 336.000deg, rgba(91, 75, 116, 1.000) 336.000deg 360.000deg);
+            min-height: 100vh;
+        }
+        .content-card {
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4"><header class="flex justify-between items-center mb-6 p-4 rounded-lg shadow-md content-card"><h1 class="text-3xl font-bold text-gray-800">User Management</h1><a href="/" class="px-4 py-2 font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600">Back to Dashboard</a></header><div id="user-management-section" class="p-6 rounded-lg shadow content-card"><div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-semibold">All Users</h2><button id="add-user-btn" class="px-4 py-2 font-bold text-white bg-green-500 rounded-md hover:bg-green-600">Add New User</button></div><table class="min-w-full bg-white border"><thead class="bg-gray-200"><tr><th class="py-2 px-4 border-b">Employee Code</th><th class="py-2 px-4 border-b">User Name</th><th class="py-2 px-4 border-b">Location</th><th class="py-2 px-4 border-b">Role</th><th class="py-2 px-4 border-b">Category</th><th class="py-2 px-4 border-b">Actions</th></tr></thead><tbody id="users-table-body"></tbody></table></div></div>
+    <div id="add-user-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;"><div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white"><div class="mt-3 text-center"><h3 class="text-lg font-medium text-gray-900">Add New User</h3><form id="add-user-form" class="space-y-4 text-left mt-4"><input type="text" id="new-employee-code" placeholder="Employee Code" required class="w-full px-3 py-2 border rounded"><input type="text" id="new-name" placeholder="Full Name" required class="w-full px-3 py-2 border rounded"><select id="new-location" required class="w-full px-3 py-2 border rounded"><option value="">Select Location</option><option>Hosur Unit 1</option><option>Hosur Unit 2</option><option>Hosur Unit 4</option><option>Hosur Unit 5</option><option>Hosur Unit 8</option><option>AutoPluss</option><option>Mysore</option><option>Chennai</option><option>RE</option><option>Delphi</option></select><input type="password" id="new-password" placeholder="Password" required class="w-full px-3 py-2 border rounded"><select id="new-role" required class="w-full px-3 py-2 border rounded"><option value="">Select Role</option><option value="admin">Admin</option><option value="agent">Agent</option></select><input type="text" id="new-category" placeholder="Category (e.g., Level 1)" required class="w-full px-3 py-2 border rounded"></form><div class="items-center px-4 py-3 mt-4"><button id="submit-user-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Create User</button><button id="close-add-user-modal-btn" class="px-4 py-2 bg-gray-500 text-white rounded-md ml-2 hover:bg-gray-600">Cancel</button></div></div></div></div>
+    <div id="edit-user-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;"><div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white"><div class="mt-3 text-center"><h3 class="text-lg font-medium text-gray-900">Edit User</h3><form id="edit-user-form" class="space-y-4 text-left mt-4"><input type="hidden" id="edit-user-code"><div class="text-left"><label class="block text-sm">Name</label><input type="text" id="edit-user-name" required class="w-full px-3 py-2 border rounded"></div><div class="text-left"><label class="block text-sm">Location</label><select id="edit-user-location" required class="w-full px-3 py-2 border rounded"><option value="">Select Location</option><option>Hosur Unit 1</option><option>Hosur Unit 2</option><option>Hosur Unit 4</option><option>Hosur Unit 5</option><option>Hosur Unit 8</option><option>AutoPluss</option><option>Mysore</option><option>Chennai</option><option>RE</option><option>Delphi</option></select></div><div class="text-left"><label class="block text-sm">Password</label><input type="password" id="edit-user-password" required class="w-full px-3 py-2 border rounded"></div><div class="text-left"><label class="block text-sm">Role</label><select id="edit-user-role" required class="w-full px-3 py-2 border rounded"><option value="admin">Admin</option><option value="agent">Agent</option></select></div><div class="text-left"><label class="block text-sm">Category</label><input type="text" id="edit-user-category" required class="w-full px-3 py-2 border rounded"></div></form><div class="items-center px-4 py-3 mt-4"><button id="save-user-changes-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Save Changes</button><button id="close-edit-user-modal-btn" class="px-4 py-2 bg-gray-500 text-white rounded-md ml-2 hover:bg-gray-600">Cancel</button></div></div></div></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ui = {
+                usersTableBody: document.getElementById('users-table-body'), addUserBtn: document.getElementById('add-user-btn'),
+                addUserModal: document.getElementById('add-user-modal'), closeAddUserModalBtn: document.getElementById('close-add-user-modal-btn'),
+                addUserForm: document.getElementById('add-user-form'), submitUserBtn: document.getElementById('submit-user-btn'),
+                editUserModal: document.getElementById('edit-user-modal'), closeEditUserModalBtn: document.getElementById('close-edit-user-modal-btn'),
+                saveUserChangesBtn: document.getElementById('save-user-changes-btn')
+            };
+            let allUsersData = {};
+            async function loadUsers() {
+                try {
+                    const res = await fetch('/api/users');
+                    const users = await res.json();
+                    allUsersData = users.reduce((acc, u) => ({...acc, [u.employee_code]: u}), {});
+                    const renderUserRow = (u) => `<tr><td class="border px-4 py-2">${u.employee_code}</td><td class="border px-4 py-2">${u.name}</td><td class="border px-4 py-2">${u.location || ''}</td><td class="border px-4 py-2">${u.role}</td><td class="border px-4 py-2">${u.category}</td><td class="border px-4 py-2"><button onclick="openEditUserModal('${u.employee_code}')" class="text-blue-500 hover:underline">Edit</button></td></tr>`;
+                    ui.usersTableBody.innerHTML = users.map(renderUserRow).join('');
+                } catch (err) { console.error('Failed to load users:', err); alert('Could not load user data.'); }
+            }
+            ui.addUserBtn.addEventListener('click', () => ui.addUserModal.style.display = 'block');
+            ui.closeAddUserModalBtn.addEventListener('click', () => { ui.addUserModal.style.display = 'none'; ui.addUserForm.reset(); });
+            ui.closeEditUserModalBtn.addEventListener('click', () => ui.editUserModal.style.display = 'none');
+            ui.submitUserBtn.addEventListener('click', async () => {
+                const userData = { employee_code: document.getElementById('new-employee-code').value, name: document.getElementById('new-name').value, location: document.getElementById('new-location').value, password: document.getElementById('new-password').value, role: document.getElementById('new-role').value, category: document.getElementById('new-category').value };
+                try {
+                    const res = await fetch('/api/users/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userData) });
+                    const result = await res.json();
+                    alert(result.message || (res.ok ? 'User created successfully!' : 'Failed to create user.'));
+                    if (res.ok) { ui.addUserModal.style.display = 'none'; loadUsers(); }
+                } catch (err) { console.error('Error creating user:', err); }
+            });
+            ui.saveUserChangesBtn.addEventListener('click', async () => {
+                const employeeCode = document.getElementById('edit-user-code').value;
+                const userData = { name: document.getElementById('edit-user-name').value, location: document.getElementById('edit-user-location').value, password: document.getElementById('edit-user-password').value, role: document.getElementById('edit-user-role').value, category: document.getElementById('edit-user-category').value };
+                try {
+                    const res = await fetch(`/api/users/update/${employeeCode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userData) });
+                    const result = await res.json();
+                    alert(result.message);
+                    if (res.ok) { ui.editUserModal.style.display = 'none'; loadUsers(); }
+                } catch (err) { console.error('Error updating user:', err); }
+            });
+            window.openEditUserModal = (employeeCode) => {
+                const user = allUsersData[employeeCode];
+                if (!user) return;
+                document.getElementById('edit-user-code').value = user.employee_code;
+                document.getElementById('edit-user-name').value = user.name;
+                document.getElementById('edit-user-location').value = user.location || '';
+                document.getElementById('edit-user-password').value = user.password;
+                document.getElementById('edit-user-role').value = user.role;
+                document.getElementById('edit-user-category').value = user.category;
+                ui.editUserModal.style.display = 'block';
+            };
+            loadUsers();
+        });
+    </script>
+</body>
+</html>

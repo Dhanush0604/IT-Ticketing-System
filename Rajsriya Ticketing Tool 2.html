@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Call Tracking Dashboard</title>
+    <!-- Use Tailwind CSS for responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* A light, clean background */
+        }
+        /* Modal background */
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Login Page Container -->
+    <div id="loginPage" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-6">IT Dashboard Login</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="employeeCode" class="block text-sm font-medium text-gray-700">Employee Code</label>
+                    <input type="text" id="employeeCode" name="employeeCode" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" name="password" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                        Login
+                    </button>
+                </div>
+                <div id="loginError" class="hidden text-sm text-red-600 text-center">Invalid Employee Code or password.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div id="mainDashboard" class="hidden max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+
+        <!-- Dashboard Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">IT Call Tracking Dashboard</h1>
+            <div class="flex items-center mt-2 sm:mt-0">
+                <p class="text-gray-500 mr-4" id="welcomeMessage">Welcome, User</p>
+                <button id="logoutBtn" class="py-2 px-4 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition ease-in-out duration-150">Logout</button>
+            </div>
+        </div>
+
+        <!-- Admin-only sections -->
+        <div id="adminView" class="hidden">
+            <!-- Summary Cards Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+                <!-- Total Tickets Card -->
+                <div class="bg-indigo-100 rounded-2xl p-6 shadow-lg border border-indigo-200">
+                    <p class="text-sm font-medium text-indigo-600">Total Tickets</p>
+                    <p class="text-4xl font-bold text-indigo-800 mt-1" id="totalTickets">0</p>
+                </div>
+
+                <!-- Open Tickets Card -->
+                <div class="bg-red-100 rounded-2xl p-6 shadow-lg border border-red-200">
+                    <p class="text-sm font-medium text-red-600">Open Tickets</p>
+                    <p class="text-4xl font-bold text-red-800 mt-1" id="openTickets">0</p>
+                </div>
+
+                <!-- Resolved Tickets Card -->
+                <div class="bg-emerald-100 rounded-2xl p-6 shadow-lg border border-emerald-200">
+                    <p class="text-sm font-medium text-emerald-600">Resolved Tickets</p>
+                    <p class="text-4xl font-bold text-emerald-800 mt-1" id="resolvedTickets">0</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end mb-4 gap-2">
+                <button id="createUserBtn" class="py-2 px-4 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-sm transition ease-in-out duration-150">
+                    Create New User
+                </button>
+            </div>
+
+            <!-- User Management Table -->
+            <h2 class="text-2xl font-semibold text-gray-800 my-4">User Management</h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 mb-8">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Code</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- User data will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add New Ticket Form -->
+            <div id="addTicketSection" class="mt-8 p-6 bg-purple-100 rounded-2xl shadow-xl border border-purple-200">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Add a New Ticket</h2>
+                <form id="addTicketForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="callerName" class="block text-sm font-medium text-gray-700">Caller's Name</label>
+                        <input type="text" id="callerName" name="callerName" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
+                        <input type="text" id="department" name="department" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="contactInfo" class="block text-sm font-medium text-gray-700">Contact (Email or Phone)</label>
+                        <input type="text" id="contactInfo" name="contactInfo" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="issueDescription" class="block text-sm font-medium text-gray-700">Issue Description</label>
+                        <input type="text" id="issueDescription" name="issueDescription" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="issueCategory" class="block text-sm font-medium text-gray-700">Issue Category</label>
+                        <select id="issueCategory" name="issueCategory" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="Hardware">Hardware</option>
+                            <option value="Software">Software</option>
+                            <option value="Network">Network</option>
+                            <option value="Password">Password</option>
+                            <option value="Printer">Printer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
+                        <select id="priority" name="priority" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="High">High</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div id="assignedToField">
+                        <label for="assignedTo" class="block text-sm font-medium text-gray-700">Assigned To</label>
+                        <select id="assignedTo" name="assignedTo" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <!-- Agents will be dynamically populated here -->
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                            Add Ticket
+                        </button>
+                    </div>
+                </form>
+                <!-- Custom Message Box for success/error -->
+                <div id="messageBox" class="hidden mt-4 p-4 text-sm rounded-md" role="alert"></div>
+            </div>
+            
+            <!-- Ticket Table Section -->
+            <h2 class="text-2xl font-semibold text-gray-800 my-4">All Tickets</h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Caller</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resolution</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Tickets will be dynamically populated here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent-only sections -->
+        <div id="agentView" class="hidden">
+             <!-- Ticket Table Section for Agents -->
+             <h2 class="text-2xl font-semibold text-gray-800 my-4">All Tickets</h2>
+             <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Caller</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentTicketTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Tickets for the agent will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Edit Ticket Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-bg flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full m-4">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Edit Ticket</h2>
+            <form id="editTicketForm" class="grid grid-cols-1 gap-4">
+                <input type="hidden" id="editTicketId">
+                <div>
+                    <label for="editCallerName" class="block text-sm font-medium text-gray-700">Caller's Name</label>
+                    <input type="text" id="editCallerName" name="callerName" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="editDepartment" class="block text-sm font-medium text-gray-700">Department</label>
+                    <input type="text" id="editDepartment" name="department" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="editContactInfo" class="block text-sm font-medium text-gray-700">Contact</label>
+                    <input type="text" id="editContactInfo" name="contactInfo" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="editIssueDescription" class="block text-sm font-medium text-gray-700">Issue Description</label>
+                    <input type="text" id="editIssueDescription" name="issueDescription" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="editIssueCategory" class="block text-sm font-medium text-gray-700">Issue Category</label>
+                    <select id="editIssueCategory" name="issueCategory" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="Hardware">Hardware</option>
+                        <option value="Software">Software</option>
+                        <option value="Network">Network</option>
+                        <option value="Password">Password</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editAssignedTo" class="block text-sm font-medium text-gray-700">Assigned To</label>
+                    <select id="editAssignedTo" name="assignedTo" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <!-- Agents will be dynamically populated here -->
+                    </select>
+                </div>
+                <div>
+                    <label for="editPriority" class="block text-sm font-medium text-gray-700">Priority</label>
+                    <select id="editPriority" name="priority" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editResolution" class="block text-sm font-medium text-gray-700">Resolution Notes</label>
+                    <textarea id="editResolution" name="resolution" rows="3" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                </div>
+                <div>
+                    <label for="editNotes" class="block text-sm font-medium text-gray-700">Notes</label>
+                    <textarea id="editNotes" name="notes" rows="3" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" id="cancelEditBtn" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition ease-in-out duration-150">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-bg flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full m-4">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Create New User</h2>
+            <form id="createUserForm" class="grid grid-cols-1 gap-4">
+                <div>
+                    <label for="newEmployeeCode" class="block text-sm font-medium text-gray-700">Employee Code</label>
+                    <input type="text" id="newEmployeeCode" name="newEmployeeCode" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="newUserName" class="block text-sm font-medium text-gray-700">User Name</label>
+                    <input type="text" id="newUserName" name="newUserName" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="newUserRole" class="block text-sm font-medium text-gray-700">Role</label>
+                    <select id="newUserRole" name="newUserRole" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="admin">Admin</option>
+                        <option value="agent">Trainee/user</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="newUserCategory" class="block text-sm font-medium text-gray-700">Category</label>
+                    <input type="text" id="newUserCategory" name="newUserCategory" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                 <div>
+                    <label for="newUserPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="newUserPassword" name="newUserPassword" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                </div>
+                <div id="createUserMessage" class="hidden mt-2 p-2 text-sm rounded-md"></div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" id="cancelCreateUserBtn" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition ease-in-out duration-150">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                        Create User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const loginPage = document.getElementById('loginPage');
+            const mainDashboard = document.getElementById('mainDashboard');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+
+            const adminView = document.getElementById('adminView');
+            const agentView = document.getElementById('agentView');
+            const addTicketSection = document.getElementById('addTicketSection');
+            
+            const createUserBtn = document.getElementById('createUserBtn');
+            const createUserModal = document.getElementById('createUserModal');
+            const createUserForm = document.getElementById('createUserForm');
+            const cancelCreateUserBtn = document.getElementById('cancelCreateUserBtn');
+            const createUserMessage = document.getElementById('createUserMessage');
+
+            const ticketTableBody = document.getElementById('ticketTableBody');
+            const agentTicketTableBody = document.getElementById('agentTicketTableBody');
+            const userTableBody = document.getElementById('userTableBody');
+            const addTicketForm = document.getElementById('addTicketForm');
+            const assignedToSelect = document.getElementById('assignedTo');
+            const editTicketForm = document.getElementById('editTicketForm');
+            const editModal = document.getElementById('editModal');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const editAssignedToSelect = document.getElementById('editAssignedTo');
+            const messageBox = document.getElementById('messageBox');
+            const totalTicketsEl = document.getElementById('totalTickets');
+            const openTicketsEl = document.getElementById('openTickets');
+            const resolvedTicketsEl = document.getElementById('resolvedTickets');
+
+            // --- Local Data Store ---
+            // Hardcoded user data. Using Employee Code as the key.
+            const users = {
+                '1110': { name: 'Lokesh', role: 'admin', category: 'Level 3', password: 'password' },
+                '2763': { name: 'Dhanush', role: 'admin', category: 'Level 3', password: 'password' },
+                '82655': { name: 'Manikandan', role: 'agent', category: 'Level 1', password: 'password' },
+                '82717': { name: 'Manjunathan', role: 'agent', category: 'Level 1', password: 'password' },
+            };
+
+            // Sample ticket data.
+            let tickets = [
+                { id: '001', date: '2024-08-01', time: '10:30 AM', caller: 'Jane Doe', department: 'Sales', contact: 'jane.doe@example.com', issue: 'Unable to connect to Wi-Fi.', category: 'Network', assignedTo: 'Manikandan', priority: 'High', status: 'In Progress', resolution: '', notes: 'User is in a rush for a client meeting.' },
+                { id: '002', date: '2024-07-31', time: '02:15 PM', caller: 'Peter Jones', department: 'Marketing', contact: '555-1234', issue: 'Laptop screen is flickering.', category: 'Hardware', assignedTo: 'Manikandan', priority: 'Low', status: 'Completed', resolution: 'Replaced faulty display cable.', notes: '' },
+                { id: '003', date: '2024-07-30', time: '09:00 AM', caller: 'Mary Williams', department: 'HR', contact: 'mary.w@example.com', issue: 'Forgot password for a cloud application.', category: 'Password', assignedTo: 'Dhanush', priority: 'Medium', status: 'In Progress', resolution: '', notes: 'Sent password reset link, awaiting confirmation.' },
+                { id: '004', date: '2024-07-29', time: '04:45 PM', caller: 'Tom Green', department: 'IT', contact: '555-5678', issue: 'New software installation required.', category: 'Software', assignedTo: 'Manjunathan', priority: 'Low', status: 'Completed', resolution: 'Installed and configured the software.', notes: 'Request from the IT director.' },
+                { id: '005', date: '2024-07-28', time: '11:20 AM', caller: 'Lisa White', department: 'Finance', contact: 'lisa.w@example.com', issue: 'Printer is not printing in color.', category: 'Printer', assignedTo: 'Manjunathan', priority: 'Low', status: 'In Progress', resolution: '', notes: 'Printer model: HP Laserjet 123.' },
+            ];
+
+            let currentUser = null;
+
+            // --- Rendering Functions ---
+
+            // Renders the list of agents for assignment dropdowns
+            function renderAgentList() {
+                const agents = Object.values(users).filter(user => user.role === 'agent' || user.role === 'admin');
+                assignedToSelect.innerHTML = '';
+                editAssignedToSelect.innerHTML = '';
+                agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.name;
+                    option.textContent = `${agent.name} (${agent.category})`;
+                    assignedToSelect.appendChild(option);
+
+                    const option2 = option.cloneNode(true);
+                    editAssignedToSelect.appendChild(option2);
+                });
+            }
+
+            // Renders the tickets for admin view
+            function renderAdminTickets() {
+                ticketTableBody.innerHTML = '';
+                tickets.forEach(ticket => {
+                    const newRow = document.createElement('tr');
+                    let statusColor, statusBg;
+                    if (ticket.status === 'Completed' || ticket.status === 'Resolved') {
+                        statusColor = 'text-emerald-800';
+                        statusBg = 'bg-emerald-100';
+                    } else if (ticket.status === 'Transferred to Admin') {
+                        statusColor = 'text-purple-800';
+                        statusBg = 'bg-purple-100';
+                    } else {
+                        statusColor = 'text-red-800';
+                        statusBg = 'bg-red-100';
+                    }
+                    
+                    let priorityColor = '';
+                    if (ticket.priority === 'High') {
+                        priorityColor = 'text-red-600';
+                    } else if (ticket.priority === 'Medium') {
+                        priorityColor = 'text-yellow-600';
+                    } else {
+                        priorityColor = 'text-green-600';
+                    }
+                    
+                    newRow.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${ticket.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.date}<br>${ticket.time}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.caller}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.department}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.contact}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="${ticket.issue}">${ticket.issue}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.category}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.assignedTo}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${priorityColor}">${ticket.priority}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBg} ${statusColor}">
+                                ${ticket.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="${ticket.resolution}">${ticket.resolution || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2">
+                            <button class="text-indigo-600 hover:text-indigo-900 edit-btn" data-id="${ticket.id}">Edit</button>
+                            ${ticket.status === 'Completed' || ticket.status === 'Resolved' ?
+                                `<button class="text-yellow-600 hover:text-yellow-900 reopen-btn" data-id="${ticket.id}">Reopen</button>` :
+                                `<button class="text-emerald-600 hover:text-emerald-900 close-btn" data-id="${ticket.id}">Close</button>`
+                            }
+                        </td>
+                    `;
+                    ticketTableBody.appendChild(newRow);
+                });
+                updateSummaryCards();
+            }
+
+            // Renders the tickets for agent view
+            function renderAgentTickets() {
+                agentTicketTableBody.innerHTML = '';
+                const agentTickets = tickets.filter(ticket => ticket.assignedTo === currentUser.name);
+
+                agentTickets.forEach(ticket => {
+                    const newRow = document.createElement('tr');
+                    let statusSelect = `
+                        <select class="status-select mt-1 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" data-id="${ticket.id}">
+                            <option value="In Progress" ${ticket.status === 'In Progress' ? 'selected' : ''}>Pending</option>
+                            <option value="Completed" ${ticket.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Transferred to Admin" ${ticket.status === 'Transferred to Admin' ? 'selected' : ''}>Transferred to Admin</option>
+                        </select>
+                    `;
+
+                    newRow.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${ticket.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.date}<br>${ticket.time}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.caller}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="${ticket.issue}">${ticket.issue}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ticket.assignedTo}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${statusSelect}
+                        </td>
+                    `;
+                    agentTicketTableBody.appendChild(newRow);
+                });
+            }
+
+            // Renders the user table for the admin view
+            function renderUsers() {
+                userTableBody.innerHTML = '';
+                for (const employeeCode in users) {
+                    const user = users[employeeCode];
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${employeeCode}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.role}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.category}</td>
+                    `;
+                    userTableBody.appendChild(newRow);
+                }
+            }
+
+
+            // Updates the summary cards based on the current tickets array
+            function updateSummaryCards() {
+                totalTicketsEl.textContent = tickets.length;
+                openTicketsEl.textContent = tickets.filter(t => t.status !== 'Completed' && t.status !== 'Resolved').length;
+                resolvedTicketsEl.textContent = tickets.filter(t => t.status === 'Completed' || t.status === 'Resolved').length;
+            }
+
+            // --- Event Handlers ---
+
+            // Handles login form submission
+            loginForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const employeeCode = document.getElementById('employeeCode').value;
+                const password = document.getElementById('password').value;
+
+                if (users[employeeCode] && users[employeeCode].password === password) {
+                    currentUser = {
+                        code: employeeCode,
+                        name: users[employeeCode].name,
+                        role: users[employeeCode].role,
+                        category: users[employeeCode].category
+                    };
+                    loginPage.classList.add('hidden');
+                    mainDashboard.classList.remove('hidden');
+                    welcomeMessage.textContent = `Welcome, ${currentUser.name} (${currentUser.role})`;
+                    
+                    if (currentUser.role === 'admin') {
+                        adminView.classList.remove('hidden');
+                        agentView.classList.add('hidden');
+                        renderAdminTickets();
+                        renderUsers();
+                    } else { // agent
+                        adminView.classList.add('hidden');
+                        agentView.classList.remove('hidden');
+                        renderAgentTickets();
+                    }
+                    renderAgentList();
+                } else {
+                    loginError.classList.remove('hidden');
+                }
+            });
+
+            // Handles logout
+            logoutBtn.addEventListener('click', () => {
+                currentUser = null;
+                loginPage.classList.remove('hidden');
+                mainDashboard.classList.add('hidden');
+                loginForm.reset();
+                loginError.classList.add('hidden');
+            });
+
+            // Adds a new ticket
+            addTicketForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const now = new Date();
+                const newTicket = {
+                    id: String(tickets.length + 1).padStart(3, '0'),
+                    date: now.toISOString().slice(0, 10),
+                    time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                    caller: document.getElementById('callerName').value,
+                    department: document.getElementById('department').value,
+                    contact: document.getElementById('contactInfo').value,
+                    issue: document.getElementById('issueDescription').value,
+                    category: document.getElementById('issueCategory').value,
+                    assignedTo: assignedToSelect.value,
+                    priority: document.getElementById('priority').value,
+                    status: 'In Progress',
+                    resolution: '',
+                    notes: document.getElementById('notes').value
+                };
+                
+                tickets.unshift(newTicket); // Add new ticket to the beginning of the array
+                renderAdminTickets();
+                
+                showMessage('Ticket #' + newTicket.id + ' has been added successfully!', 'success');
+                addTicketForm.reset();
+            });
+
+            // Handles the edit and close/reopen actions via event delegation for Admin table
+            ticketTableBody.addEventListener('click', function(event) {
+                const target = event.target;
+                const ticketId = target.dataset.id;
+                const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+                if (ticketIndex === -1 || !currentUser || currentUser.role !== 'admin') return;
+
+                if (target.classList.contains('edit-btn')) {
+                    const ticket = tickets[ticketIndex];
+                    document.getElementById('editTicketId').value = ticket.id;
+                    document.getElementById('editCallerName').value = ticket.caller;
+                    document.getElementById('editDepartment').value = ticket.department;
+                    document.getElementById('editContactInfo').value = ticket.contact;
+                    document.getElementById('editIssueDescription').value = ticket.issue;
+                    document.getElementById('editIssueCategory').value = ticket.category;
+                    document.getElementById('editAssignedTo').value = ticket.assignedTo;
+                    document.getElementById('editPriority').value = ticket.priority;
+                    document.getElementById('editResolution').value = ticket.resolution;
+                    document.getElementById('editNotes').value = ticket.notes;
+                    editModal.classList.remove('hidden');
+                } else if (target.classList.contains('close-btn')) {
+                    tickets[ticketIndex].status = 'Completed';
+                    tickets[ticketIndex].resolution = 'Closed by an administrator.';
+                    showMessage('Ticket #' + ticketId + ' has been closed.', 'success');
+                    renderAdminTickets();
+                } else if (target.classList.contains('reopen-btn')) {
+                    tickets[ticketIndex].status = 'In Progress';
+                    tickets[ticketIndex].resolution = '';
+                    showMessage('Ticket #' + ticketId + ' has been reopened.', 'success');
+                    renderAdminTickets();
+                }
+            });
+
+            // Handles status updates from the agent's table
+            agentTicketTableBody.addEventListener('change', function(event) {
+                const target = event.target;
+                if (target.classList.contains('status-select')) {
+                    const ticketId = target.dataset.id;
+                    const newStatus = target.value;
+                    const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+                    
+                    if (ticketIndex === -1) return;
+                    
+                    if (tickets[ticketIndex].assignedTo === currentUser.name) {
+                        tickets[ticketIndex].status = newStatus;
+                        if (newStatus === 'Completed') {
+                            tickets[ticketIndex].resolution = `Completed by agent ${currentUser.name}.`;
+                        } else if (newStatus === 'Transferred to Admin') {
+                            // Find an admin to assign to
+                            const admin = Object.values(users).find(u => u.role === 'admin');
+                            if(admin) {
+                                tickets[ticketIndex].assignedTo = admin.name;
+                                showMessage('Ticket #' + ticketId + ' transferred to admin.', 'success');
+                            }
+                        }
+                        showMessage('Ticket #' + ticketId + ' status updated to ' + newStatus, 'success');
+                        renderAgentTickets(); 
+                    }
+                }
+            });
+
+            // Handles saving changes from the edit modal
+            editTicketForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const ticketId = document.getElementById('editTicketId').value;
+                const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+                if (ticketIndex === -1) return;
+
+                tickets[ticketIndex].caller = document.getElementById('editCallerName').value;
+                tickets[ticketIndex].department = document.getElementById('editDepartment').value;
+                tickets[ticketIndex].contact = document.getElementById('editContactInfo').value;
+                tickets[ticketIndex].issue = document.getElementById('editIssueDescription').value;
+                tickets[ticketIndex].category = document.getElementById('editIssueCategory').value;
+                tickets[ticketIndex].assignedTo = editAssignedToSelect.value;
+                tickets[ticketIndex].priority = document.getElementById('editPriority').value;
+                tickets[ticketIndex].resolution = document.getElementById('editResolution').value;
+                tickets[ticketIndex].notes = document.getElementById('editNotes').value;
+
+                editModal.classList.add('hidden');
+                showMessage('Ticket #' + ticketId + ' has been updated successfully!', 'success');
+                renderAdminTickets();
+            });
+
+            cancelEditBtn.addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+            
+            createUserBtn.addEventListener('click', () => {
+                createUserModal.classList.remove('hidden');
+                createUserMessage.classList.add('hidden');
+                createUserForm.reset();
+            });
+
+            cancelCreateUserBtn.addEventListener('click', () => {
+                createUserModal.classList.add('hidden');
+            });
+
+            createUserForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const newEmployeeCode = document.getElementById('newEmployeeCode').value;
+                const newUserName = document.getElementById('newUserName').value;
+                const newUserRole = document.getElementById('newUserRole').value;
+                const newUserCategory = document.getElementById('newUserCategory').value;
+                const newUserPassword = document.getElementById('newUserPassword').value;
+
+                if (users[newEmployeeCode]) {
+                    showCreateUserMessage('Employee code already exists!', 'error');
+                    return;
+                }
+                
+                users[newEmployeeCode] = {
+                    name: newUserName,
+                    role: newUserRole,
+                    category: newUserCategory,
+                    password: newUserPassword
+                };
+
+                showCreateUserMessage('User created successfully!', 'success');
+                setTimeout(() => {
+                    createUserModal.classList.add('hidden');
+                }, 1500);
+                
+                renderAgentList();
+                renderUsers();
+            });
+
+            // --- Helper Functions ---
+
+            function showCreateUserMessage(text, type) {
+                createUserMessage.classList.remove('hidden');
+                createUserMessage.textContent = text;
+                if (type === 'success') {
+                    createUserMessage.className = 'mt-2 p-2 text-sm rounded-md bg-emerald-100 text-emerald-800';
+                } else {
+                    createUserMessage.className = 'mt-2 p-2 text-sm rounded-md bg-red-100 text-red-800';
+                }
+
+                setTimeout(() => {
+                    createUserMessage.classList.add('hidden');
+                }, 3000);
+            }
+
+            function showMessage(text, type) {
+                messageBox.classList.remove('hidden');
+                messageBox.textContent = text;
+                if (type === 'success') {
+                    messageBox.className = 'mt-4 p-4 text-sm rounded-md bg-emerald-100 text-emerald-800';
+                } else {
+                    messageBox.className = 'mt-4 p-4 text-sm rounded-md bg-red-100 text-red-800';
+                }
+
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+
+            // --- Initial Setup ---
+            // Hide the main dashboard until a user logs in
+            mainDashboard.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
